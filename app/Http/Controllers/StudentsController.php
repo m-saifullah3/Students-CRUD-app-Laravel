@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class StudentsController extends Controller
 {
@@ -13,7 +14,8 @@ class StudentsController extends Controller
      */
     public function index()
     {
-        //
+        $students = DB::table('details')->get();
+        return view('students/index', ['students' => $students]);
     }
 
     /**
@@ -23,7 +25,7 @@ class StudentsController extends Controller
      */
     public function create()
     {
-        //
+        return view('students/create');
     }
 
     /**
@@ -34,7 +36,25 @@ class StudentsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'name' => ['required'],
+            'email' => ['required'],
+            'number' => ['required'],
+            'course' => ['required']
+        ]);
+
+        $result = DB::table('details')->insert([
+            'student_name' => $request->name,
+            'student_email' => $request->email,
+            'phone_number' => $request->number,
+            'course' => $request->course
+        ]);
+
+        if ($result) {
+            return back()->with('success', 'Student has been added');
+        } else {
+            return back()->with('failed', 'Student has failed to add');
+        }
     }
 
     /**
@@ -56,7 +76,8 @@ class StudentsController extends Controller
      */
     public function edit($id)
     {
-        //
+        $student = DB::table('details')->find($id);
+        return view('students/edit', ['student' => $student]);
     }
 
     /**
@@ -68,7 +89,25 @@ class StudentsController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'name' => ['required'],
+            'email' => ['required'],
+            'number' => ['required'],
+            'course' => ['required']
+        ]);
+
+        $result = DB::table('details')->whereId($id)->update([
+            'student_name' => $request->name,
+            'student_email' => $request->email,
+            'phone_number' => $request->number,
+            'course' => $request->course
+        ]);
+
+        if ($result) {
+            return redirect()->route('edit_student', $id)->with('success', 'Student has been updated');
+        } else {
+            return redirect()->route('edit_student', $id)->with('failed', 'Nothing to update');
+        }
     }
 
     /**
@@ -79,6 +118,12 @@ class StudentsController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $result = DB::table('details')->whereId($id)->delete();
+
+        if ($result) {
+            return redirect()->route('show_students')->with('success', 'Student has been deleted');
+        } else {
+            return redirect()->route('show_students')->with('failed', 'Student has failed to delete');
+        }
     }
 }
